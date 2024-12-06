@@ -1,6 +1,15 @@
 /**
  * The Sudoku number puzzle to be solved
  */
+/**
+ * ES234317-Algorithm and Data Structures
+ * Semester Ganjil, 2024/2025
+ * Group Capstone Project
+ * Group #5
+ * 1 - 5026231175 - Muhammad Farrel Danendra
+ * 2 - 5026231150 - Muhammad Dzaki Adfiz
+ * 3 - 5026231212 - Baqhiz Faruq S.
+ */
 public class Puzzle {
     int[][] numbers = new int[SudokuConstants.GRID_SIZE][SudokuConstants.GRID_SIZE];
     boolean[][] isGiven = new boolean[SudokuConstants.GRID_SIZE][SudokuConstants.GRID_SIZE];

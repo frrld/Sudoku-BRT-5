@@ -2,6 +2,15 @@
  * An enumeration of constants to represent the status
  * of each cell.
  */
+/**
+ * ES234317-Algorithm and Data Structures
+ * Semester Ganjil, 2024/2025
+ * Group Capstone Project
+ * Group #5
+ * 1 - 5026231175 - Muhammad Farrel Danendra
+ * 2 - 5026231150 - Muhammad Dzaki Adfiz
+ * 3 - 5026231212 - Baqhiz Faruq S.
+ */
 public enum CellStatus {
     GIVEN,         // clue, no need to guess
     TO_GUESS,      // need to guess - not attempted yet
