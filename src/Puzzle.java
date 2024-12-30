@@ -1,3 +1,8 @@
+import java.util.Random;
+import java.util.ArrayList;
+import java.util.Collections;
+
+
 /**
  * ES234317-Algorithm and Data Structures
  * Semester Ganjil, 2024/2025
@@ -6,34 +11,36 @@
  * 1 - 5026231175 - Muhammad Farrel Danendra
  * 2 - 5026231150 - Muhammad Dzaki Adfiz
  * 3 - 5026231212 - Baqhiz Faruq S.
+ *
+ * The Puzzle class handles Sudoku puzzle generation and validation.
  */
-import java.util.Random;
-
 public class Puzzle {
+    /** Grid to store the current state of the puzzle */
     public int[][] numbers = new int[SudokuConstants.GRID_SIZE][SudokuConstants.GRID_SIZE];
+    /** Random number generator for puzzle generation */
     private Random random = new Random();
+    /** Stores the complete solution for verification */
+    private int[][] solution;
 
     /**
      * Generate a new puzzle with a given difficulty level.
-     * @param level Difficulty level (e.g., 1 for easy, 4 for hard)
+     * Creates a complete solution first, then removes numbers based on difficulty.
+     * @param level Difficulty level determining how many numbers to remove
      */
     public void newPuzzle(int level) {
-        // Clear the grid first
         clearGrid();
-
-        // Generate a valid Sudoku solution
         if (generateCompletePuzzle()) {
-            // Remove numbers based on difficulty level
-            int cellsToRemove = level * 10;
-            randomizeEmptyCells(cellsToRemove);
-        } else {
-            System.out.println("Failed to generate puzzle. Trying again with empty grid.");
-            newPuzzle(level); // Retry with fresh grid
+            solution = new int[SudokuConstants.GRID_SIZE][SudokuConstants.GRID_SIZE];
+            for (int i = 0; i < SudokuConstants.GRID_SIZE; i++) {
+                for (int j = 0; j < SudokuConstants.GRID_SIZE; j++) {
+                    solution[i][j] = numbers[i][j];
+                }
+            }
         }
     }
 
     /**
-     * Clear the entire grid
+     * Clear the entire grid by setting all values to 0
      */
     private void clearGrid() {
         for (int i = 0; i < SudokuConstants.GRID_SIZE; i++) {
@@ -44,7 +51,7 @@ public class Puzzle {
     }
 
     /**
-     * Generate a complete valid Sudoku solution.
+     * Generate a complete valid Sudoku solution
      * @return true if generation successful, false otherwise
      */
     private boolean generateCompletePuzzle() {
@@ -52,25 +59,24 @@ public class Puzzle {
     }
 
     /**
-     * Fill the grid using backtracking to ensure a valid Sudoku solution.
+     * Fill the grid using backtracking to ensure a valid Sudoku solution
+     * @param row Current row being filled
+     * @param col Current column being filled
+     * @return true if the grid is successfully filled
      */
     private boolean fillGrid(int row, int col) {
-        // If we've filled all rows, we're done
         if (row == SudokuConstants.GRID_SIZE) {
             return true;
         }
 
-        // Move to next row when we reach end of current row
         if (col == SudokuConstants.GRID_SIZE) {
             return fillGrid(row + 1, 0);
         }
 
-        // Skip if cell is already filled
         if (numbers[row][col] != 0) {
             return fillGrid(row, col + 1);
         }
 
-        // Try numbers 1-9 in random order
         int[] numbersToTry = getRandomOrderedNumbers();
 
         for (int num : numbersToTry) {
@@ -87,7 +93,8 @@ public class Puzzle {
     }
 
     /**
-     * Generate array of numbers 1-9 in random order
+     * Generate array of numbers 1-9 in random order for puzzle generation
+     * @return Array of integers 1-9 in random order
      */
     private int[] getRandomOrderedNumbers() {
         int[] nums = new int[9];
@@ -106,7 +113,11 @@ public class Puzzle {
     }
 
     /**
-     * Check if placing a number is valid according to Sudoku rules.
+     * Check if placing a number is valid according to Sudoku rules
+     * @param row Row position to check
+     * @param col Column position to check
+     * @param num Number to validate
+     * @return true if the placement is valid
      */
     private boolean isValidPlacement(int row, int col, int num) {
         // Check row
@@ -133,18 +144,31 @@ public class Puzzle {
     }
 
     /**
-     * Randomly remove numbers to create empty cells based on difficulty level.
-     * @param emptyCells Number of cells to empty.
+     * Remove numbers from the complete puzzle to create the game board
+     * @param emptyCells Number of cells to empty
      */
-    private void randomizeEmptyCells(int emptyCells) {
-        while (emptyCells > 0) {
-            int row = random.nextInt(SudokuConstants.GRID_SIZE);
-            int col = random.nextInt(SudokuConstants.GRID_SIZE);
-
-            if (numbers[row][col] != 0) {
-                numbers[row][col] = 0;
-                emptyCells--;
-            }
+    public void randomizeEmptyCells(int emptyCells) {
+        ArrayList<Integer> positions = new ArrayList<>();
+        for (int i = 0; i < SudokuConstants.GRID_SIZE * SudokuConstants.GRID_SIZE; i++) {
+            positions.add(i);
         }
+        Collections.shuffle(positions);
+
+        for (int i = 0; i < emptyCells; i++) {
+            int pos = positions.get(i);
+            int row = pos / SudokuConstants.GRID_SIZE;
+            int col = pos % SudokuConstants.GRID_SIZE;
+            numbers[row][col] = 0;
+        }
+    }
+
+    /**
+     * Get the solution number for a specific cell
+     * @param row Row of the cell
+     * @param col Column of the cell
+     * @return The correct number for this cell in the solution
+     */
+    public int getSolution(int row, int col) {
+        return solution[row][col];
     }
 }

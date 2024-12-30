@@ -11,26 +11,43 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+/**
+ * ES234317-Algorithm and Data Structures
+ * Semester Ganjil, 2024/2025
+ * Group Capstone Project
+ * Group #5
+ * 1 - 5026231175 - Muhammad Farrel Danendra
+ * 2 - 5026231150 - Muhammad Dzaki Adfiz
+ * 3 - 5026231212 - Baqhiz Faruq S.
+ *
+ * GameBoardPanel manages the Sudoku game board UI and game logic
+ */
 public class GameBoardPanel extends JPanel {
-    private static final long serialVersionUID = 1L;  // to prevent serial warning
+    private static final long serialVersionUID = 1L;
 
-    // Define named constants for UI sizes
-    public static final int CELL_SIZE = 60;   // Cell width/height in pixels
+    /** Cell size in pixels */
+    public static final int CELL_SIZE = 60;
+    /** Total board width */
     public static final int BOARD_WIDTH = CELL_SIZE * SudokuConstants.GRID_SIZE;
+    /** Total board height */
     public static final int BOARD_HEIGHT = CELL_SIZE * SudokuConstants.GRID_SIZE;
 
-    // Define properties
+    /** 2D array of Cell objects representing the game board */
     private Cell[][] cells = new Cell[SudokuConstants.GRID_SIZE][SudokuConstants.GRID_SIZE];
+    /** Puzzle generator instance */
     private Puzzle puzzle;
+    /** Stores complete solution for validation */
+    private int[][] solution;
 
-    /** Constructor */
+    /**
+     * Constructor - Initializes the game board panel
+     */
     public GameBoardPanel() {
         super.setLayout(new GridLayout(SudokuConstants.GRID_SIZE, SudokuConstants.GRID_SIZE));
-
-        // Initialize puzzle
         puzzle = new Puzzle();
+        solution = new int[SudokuConstants.GRID_SIZE][SudokuConstants.GRID_SIZE];
 
-        // Allocate the 2D array of Cell, and add into JPanel.
+        // Create and add cells to the panel
         for (int row = 0; row < SudokuConstants.GRID_SIZE; ++row) {
             for (int col = 0; col < SudokuConstants.GRID_SIZE; ++col) {
                 cells[row][col] = new Cell(row, col);
@@ -38,7 +55,7 @@ public class GameBoardPanel extends JPanel {
             }
         }
 
-        // Add common listener to all cells
+        // Add input listener to all cells
         CellInputListener listener = new CellInputListener();
         for (int row = 0; row < SudokuConstants.GRID_SIZE; ++row) {
             for (int col = 0; col < SudokuConstants.GRID_SIZE; ++col) {
@@ -51,34 +68,42 @@ public class GameBoardPanel extends JPanel {
 
     /**
      * Reset the game board and generate a new puzzle
+     * Stores solution and removes numbers to create playable board
      */
     public void resetBoard() {
-        // Generate new puzzle first
-        puzzle.newPuzzle(4); // Generate new puzzle with difficulty level 4
+        puzzle.newPuzzle(2);
 
-        // Reset and update all cells
+        // Store the complete solution
+        for (int i = 0; i < SudokuConstants.GRID_SIZE; i++) {
+            for (int j = 0; j < SudokuConstants.GRID_SIZE; j++) {
+                solution[i][j] = puzzle.numbers[i][j];
+            }
+        }
+
+        // Remove numbers to create puzzle
+        puzzle.randomizeEmptyCells(20);
+
+        // Initialize the board cells
         for (int row = 0; row < SudokuConstants.GRID_SIZE; ++row) {
             for (int col = 0; col < SudokuConstants.GRID_SIZE; ++col) {
-                // Get the value from the newly generated puzzle
                 int value = puzzle.numbers[row][col];
                 boolean isGiven = (value != 0);
-
-                // Reset the cell and set new value
-                cells[row][col].newGame(value, isGiven);
+                cells[row][col].newGame(isGiven ? value : 0, isGiven);
+                cells[row][col].setNumber(solution[row][col]);
             }
         }
     }
 
     /**
-     * Generate a new game
+     * Start a new game by resetting the board
      */
     public void newGame() {
-        // Simply call resetBoard as it now handles both reset and new game generation
         resetBoard();
     }
 
     /**
-     * Return true if the puzzle is solved
+     * Check if the puzzle is completely solved
+     * @return true if all cells are correctly filled
      */
     public boolean isSolved() {
         for (int row = 0; row < SudokuConstants.GRID_SIZE; ++row) {
@@ -92,37 +117,44 @@ public class GameBoardPanel extends JPanel {
         return true;
     }
 
+    /**
+     * Inner class to handle cell input events
+     */
     private class CellInputListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            Cell sourceCell = (Cell) e.getSource();
+            Cell sourceCell = (Cell)e.getSource();
+
+            // Skip if cell is a given number
+            if (sourceCell.getStatus() == CellStatus.GIVEN) {
+                return;
+            }
 
             try {
-                int numberIn = Integer.parseInt(sourceCell.getText());
+                int userInput = Integer.parseInt(sourceCell.getText());
 
-                // Validate input number (1-9)
-                if (numberIn >= 1 && numberIn <= 9) {
-                    System.out.println("You entered " + numberIn);
+                // Debug output
+                System.out.println("Row: " + sourceCell.getRow() +
+                        ", Col: " + sourceCell.getCol() +
+                        ", Input: " + userInput +
+                        ", Solution: " + solution[sourceCell.getRow()][sourceCell.getCol()]);
 
-                    // Check if the number matches the solution
-                    if (numberIn == sourceCell.getNumber()) {
+                // Validate input range
+                if (userInput >= 1 && userInput <= 9) {
+                    // Check against solution
+                    if (userInput == solution[sourceCell.getRow()][sourceCell.getCol()]) {
                         sourceCell.setStatus(CellStatus.CORRECT_GUESS);
-
-                        // Check if puzzle is solved after correct guess
                         if (isSolved()) {
-                            JOptionPane.showMessageDialog(null,
-                                    "Congratulations! You've solved the puzzle!");
+                            JOptionPane.showMessageDialog(null, "Congratulations! You've solved the puzzle!");
                         }
                     } else {
                         sourceCell.setStatus(CellStatus.WRONG_GUESS);
                     }
                 } else {
-                    JOptionPane.showMessageDialog(null,
-                            "Please enter a number between 1 and 9");
+                    JOptionPane.showMessageDialog(null, "Please enter a number between 1 and 9");
                     sourceCell.setText("");
                 }
             } catch (NumberFormatException ex) {
-                // Clear invalid input
                 sourceCell.setText("");
             }
         }
